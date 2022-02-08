@@ -1,27 +1,9 @@
-import os
-from glob import glob
-from matplotlib.patches import Polygon, Rectangle
-import re
-
-from PIL import Image
-import numpy as np
-
-import matplotlib.pyplot as plt
-
-import matplotlib.font_manager as fm
-fm.get_fontconfig_fonts()
-#font_location = '/usr/share/fonts/truetype/nanum/NanumBarunGothic.ttf'
-font_location = './malgun.ttf'
-font_name = fm.FontProperties(fname=font_location)
-
-
 #### txt 파일 내용이 ######################################################
 #### 480 360 36 51 379 175 363 ############################################
 #### 3024, 4032, 685, 1234, 1796, 1895, None ##############################
 #### 600, 400, 2, 1, 588, 398, 가리비구이 #################################
 #### 300,300,2,4,291,293,간장게장 #########################################
 #### 이런 식이라서 정규표현식으로 띄어쓰기와 ,가 아닌 걸 잡는다. ##########
-#### !!! 주의할 점은 레이블은 무조건 띄어쓰기가 없어야한다  !!! ###########
 p = re.compile('[^ ,]+')
 
 def imgTxtCheck(img, txt):
@@ -42,6 +24,12 @@ def imgTxtCheck(img, txt):
         print('img,txt 파일 존재 확인')
         
         img = Image.open(img)
+        
+#######################################################
+######## 이미지가 자동으로 회전되는 문제 해결 #########
+######## https://www.jongho.dev/development/%EC%9D%B4%EB%AF%B8%EC%A7%80-%EC%97%85%EB%A1%9C%EB%93%9C-%EC%8B%9C-%ED%9A%8C%EC%A0%84%EC%97%90-%EA%B4%80%ED%95%B4%EC%84%9C/
+        img = ImageOps.exif_transpose(img)
+    
         w, h = float(img.size[0]), float(img.size[1])
 #         print('img.size: ', w, h)
         
@@ -55,9 +43,9 @@ def imgTxtCheck(img, txt):
             for num in range(len(lines)):
                 line = lines[num].replace('\n', '')
                 m_line = p.findall(line)
-#                 print('txt 내용: ', m_line)
+                print('txt 내용: ', m_line)
                 
-                # 노말라이제이션 된 것들
+                # 노말라이제이션 된 것은 길이가 5이다.
                 if len(m_line) == 5:
                     normalization = True
                     print('Normalization 완료')
@@ -74,13 +62,16 @@ def imgTxtCheck(img, txt):
                     # 센터 기준의 x,y일 경우
                     center = [x_coord*w, y_coord*h, bbox_w*w, bbox_h*h, label]
                     
-                # 노말라이제이션 안된 것들
-                elif len(m_line) == 7:
+                # 노말라이제이션 안된 것들은 길이가 5 이상이다.
+                else:
                     normalization = False
                     print('Normalization 안됨')
                     
+##############################################################################
+####### 레이블에 ' ' 띄어쓰기가 있을 경우 문제 해결 ##########################
+####### '_'.join(m_line[6:])으로 6 이후의 레이블들을 _로 연결해준다.  ########
                     label, w_txt, h_txt, x_coord, y_coord, bbox_w, bbox_h  = \
-                    m_line[6], float(m_line[0]), float(m_line[1]), float(m_line[2]), \
+                    '_'.join(m_line[6:]), float(m_line[0]), float(m_line[1]), float(m_line[2]), \
                     float(m_line[3]), float(m_line[4]), float(m_line[5])
                     
                     if w_txt != w or h_txt != h:
@@ -110,7 +101,7 @@ def imgTxtCheck(img, txt):
             n_cols = 2
             fig, axs = plt.subplots(figsize=(8*n_cols, 8), nrows=1, ncols=n_cols)
 
-            print('\nbox 내용: ', box)
+#             print('\nbox 내용: ', box)
             for ind, coord in enumerate(box):
 #                 print(ind, coord)
                 # Top Left를 왼쪽에 표시하고 Center는 오른쪽에 표시한다.
@@ -142,7 +133,7 @@ def imgTxtCheck(img, txt):
             # 현재 파일/디렉토리 위치 확인 및 변경
             # https://velog.io/@stu_dy/Python-%ED%98%84%EC%9E%AC-%ED%8C%8C%EC%9D%BC%EB%94%94%EB%A0%89%ED%86%A0%EB%A6%AC-%EC%9C%84%EC%B9%98-%ED%99%95%EC%9D%B8-%EB%B0%8F-%EB%B3%80%EA%B2%BD
             output_path = os.path.realpath(f'./좌표확인_{label}.png')
-            print('\n좌표확인 이미지 저장 위치: ', output_path)
+#             print('\n좌표확인 이미지 저장 위치: ', output_path)
             
             return output_name, output_path, box, normalization
     else:
