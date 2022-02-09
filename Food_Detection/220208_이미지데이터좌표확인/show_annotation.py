@@ -1,3 +1,20 @@
+import os
+from glob import glob
+from matplotlib.patches import Polygon, Rectangle
+import re
+
+from PIL import Image, ImageOps
+import numpy as np
+
+import matplotlib.pyplot as plt
+
+import matplotlib.font_manager as fm
+fm.get_fontconfig_fonts()
+#font_location = '/usr/share/fonts/truetype/nanum/NanumBarunGothic.ttf'
+font_location = './malgun.ttf'
+font_name = fm.FontProperties(fname=font_location)
+
+
 #### txt 파일 내용이 ######################################################
 #### 480 360 36 51 379 175 363 ############################################
 #### 3024, 4032, 685, 1234, 1796, 1895, None ##############################
@@ -25,7 +42,7 @@ def imgTxtCheck(img, txt):
         
         img = Image.open(img)
         
-#######################################################
+################### 220209 수정 사항 ##################
 ######## 이미지가 자동으로 회전되는 문제 해결 #########
 ######## https://www.jongho.dev/development/%EC%9D%B4%EB%AF%B8%EC%A7%80-%EC%97%85%EB%A1%9C%EB%93%9C-%EC%8B%9C-%ED%9A%8C%EC%A0%84%EC%97%90-%EA%B4%80%ED%95%B4%EC%84%9C/
         img = ImageOps.exif_transpose(img)
@@ -67,7 +84,7 @@ def imgTxtCheck(img, txt):
                     normalization = False
                     print('Normalization 안됨')
                     
-##############################################################################
+########################## 220209 수정 사항 ##################################
 ####### 레이블에 ' ' 띄어쓰기가 있을 경우 문제 해결 ##########################
 ####### '_'.join(m_line[6:])으로 6 이후의 레이블들을 _로 연결해준다.  ########
                     label, w_txt, h_txt, x_coord, y_coord, bbox_w, bbox_h  = \
