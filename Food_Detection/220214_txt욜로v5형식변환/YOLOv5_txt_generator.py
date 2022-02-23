@@ -40,12 +40,12 @@ def yolov5_txt_save(txt_name, single_or_multi, list_, case):
             return txt_path, coord_ok
         
         elif coord_ok == 'N': # 좌표들 중에 음수가 있어서 비정상이면 N
-            return coord_ok
+            return '', coord_ok
         
     except:
         message = '파일 생성 실패'
         print(message)
-        return message
+        return message, ''
         
         
 '''case == '1', norm이 됐고 좌표가 Center 기준일 경우'''
